@@ -9,3 +9,8 @@ p {
 h1 {
     text-align: center;
 }
+
+#GameContainer {
+    height: 500px;
+    width: 50%;
+}
