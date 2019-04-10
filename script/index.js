@@ -2,7 +2,7 @@
     let document_height = document.getElementById("GameContainer").clientHeight;
 
 
-    var config = {
+    let config = {
         type: Phaser.AUTO,
         width: document_width,
         height: document_height,
@@ -22,7 +22,7 @@
     let blocks;
     let cursors;
 
-    var game = new Phaser.Game(config);
+    let game = new Phaser.Game(config);
 
     function preload () {
         this.load.image('background', 'files/fond.jpg');
