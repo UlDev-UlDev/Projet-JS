@@ -1,12 +1,15 @@
     let document_width = document.getElementById("GameContainer").clientWidth;
     let document_height = document.getElementById("GameContainer").clientHeight;
 
-
     let config = {
         type: Phaser.AUTO,
-        width: document_width,
-        height: document_height,
-        parent: "GameContainer",
+        scale: {
+            parent: 'GameContainer',
+            mode: Phaser.Scale.FIT,
+            autoCenter: Phaser.Scale.CENTER_BOTH,
+            width: document_width,
+            height: document_height,
+        },
         physics: {
             default: 'arcade',
         },
