@@ -17,6 +17,31 @@
         }
     };
 
+    class Player {
+        constructor(num){
+            this.num = num;
+            this.velocity = 160;
+            this.range = 0;
+        }
+
+        getNum(){
+            return this.num;
+        }
+        getVelocity(){
+            return this.velocity;
+        }
+        getRange(){
+            return this.range;
+        }
+
+        setVelocity(vel){
+            this.velocity = vel;
+        }
+        setRange(rng){
+            this.range = rng;
+        }
+    }
+
     let player;
     let player2;
     let blocks;
