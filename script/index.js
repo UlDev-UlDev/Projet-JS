@@ -31,7 +31,11 @@
 
         this.load.spritesheet('dude',
             'files/dude.png',
-            { frameWidth: 32, frameHeight: 48 }
+            { frameWidth: 32, frameHeight: 34 }
+        );
+        this.load.spritesheet('dude2',
+            'files/dude2.png',
+            { frameWidth: 32, frameHeight: 34 }
         );
     }
 
@@ -47,6 +51,9 @@
 
         player = this.physics.add.sprite(demi, demi, 'dude');
         player.setCollideWorldBounds(true);
+        
+        player2 = this.physics.add.sprite(document_width - demi, document_height - demi, 'dude2');
+        player2.setCollideWorldBounds(true);
 
         this.anims.create({
             key: 'left',
@@ -81,28 +88,100 @@
             frameRate: 10,
             repeat: -1
         });
+        
+        
+        this.anims.create({
+            key: 'left2',
+            frames: this.anims.generateFrameNumbers('dude2', { start: 0, end: 3 }),
+            frameRate: 10,
+            repeat: -1
+        });
+
+        this.anims.create({
+            key: 'turn2',
+            frames: [ { key: 'dude2', frame: 4 } ],
+            frameRate: 10
+        });
+
+        this.anims.create({
+            key: 'right2',
+            frames: this.anims.generateFrameNumbers('dude2', { start: 5, end: 8 }),
+            frameRate: 10,
+            repeat: -1
+        });
+
+        this.anims.create({
+            key: 'down2',
+            frames: [ { key: 'dude2', frame: 4 } ],
+            frameRate: 10,
+            repeat: -1
+        });
+
+        this.anims.create({
+            key: 'up2',
+            frames: [ { key: 'dude2', frame: 4 } ],
+            frameRate: 10,
+            repeat: -1
+        });
 
         cursors = this.input.keyboard.createCursorKeys();
         this.physics.add.collider(player, blocks);
+        this.physics.add.collider(player2, blocks);
     }
     
     function update() {
         if (cursors.left.isDown){
+            player2.setVelocityX(-160);
+            player2.setVelocityY(0);
+
+            player2.anims.play('left2', true);
+        } else if (cursors.right.isDown) {
+            player2.setVelocityX(160);
+            player2.setVelocityY(0);
+
+            player2.anims.play('right2', true);
+        } else if(cursors.down.isDown) {
+            player2.setVelocityX(0);
+            player2.setVelocityY(160);
+
+            player2.anims.play('down2', true);
+        } else if(cursors.up.isDown) {
+            player2.setVelocityX(0);
+            player2.setVelocityY(-160);
+
+            player2.anims.play('up2', true);
+        } else {
+            player2.setVelocityX(0);
+            player2.setVelocityY(0);
+
+            player2.anims.play('turn2');
+        }
+        if (cursors.up.isDown && player2.body.touching.down) {
+            player2.setVelocityY(-330);
+        }
+        
+        
+        this.keyLeft = this.input.keyboard.addKey(81);
+        this.keyRight = this.input.keyboard.addKey(68);
+        this.keyUp = this.input.keyboard.addKey(90);
+        this.keyDown = this.input.keyboard.addKey(83);
+        
+        if (this.keyLeft.isDown){
             player.setVelocityX(-160);
             player.setVelocityY(0);
 
             player.anims.play('left', true);
-        } else if (cursors.right.isDown) {
+        } else if (this.keyRight.isDown) {
             player.setVelocityX(160);
             player.setVelocityY(0);
 
             player.anims.play('right', true);
-        } else if(cursors.down.isDown) {
+        } else if(this.keyDown.isDown) {
             player.setVelocityX(0);
             player.setVelocityY(160);
 
             player.anims.play('down', true);
-        } else if(cursors.up.isDown) {
+        } else if(this.keyUp.isDown) {
             player.setVelocityX(0);
             player.setVelocityY(-160);
 
@@ -113,7 +192,7 @@
 
             player.anims.play('turn');
         }
-        if (cursors.up.isDown && player.body.touching.down) {
+        if (this.keyUp.isDown && player.body.touching.down) {
             player.setVelocityY(-330);
         }
     }
