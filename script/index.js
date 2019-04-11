@@ -240,6 +240,11 @@
         this.physics.add.collider(player, blocks);
         this.physics.add.collider(player2, blocks);
 
+        var timer = this.time.addEvent({
+           delay: 1000,                // ms
+           callback: MajSec,
+           loop: true
+        });
 
     }
     
@@ -337,6 +342,7 @@
                     setXY: { x: c.getX(), y: c.getY()},
                     setScale: { x: document_width/17000, y: document_height/17000}
                 });
+                MajNbBombes();
             }
         }
 
@@ -349,6 +355,7 @@
                     setXY: { x: c.getX(), y: c.getY()},
                     setScale: { x: document_width/17000, y: document_height/17000}
                 });
+                MajNbBombes();
             }
         }
 
@@ -372,13 +379,45 @@
                     });
             that.physics.add.collider(player, stones);
             that.physics.add.collider(player2, stones);
-            aleatcell.fill = true;
+            aleatcell.fill == true;
             nb_breakable++;
         }
         breakable_created = true;
     }
 
-    function create_item() {
+    function take_item() {
 
     }
 
+    function MajSec() {
+        VARtime = VARtime + 1;
+        if(VARtime>59){
+            let minutes = Math.floor(VARtime/60);
+            let secondes = VARtime%60;
+            document.getElementById("Time").innerHTML = "&nbsp;" + minutes + " min " + secondes + " sec.";
+        }else{
+            document.getElementById("Time").innerHTML = "&nbsp;" + VARtime + " sec.";
+        }
+    }
+
+    function MajNbBombes() {
+        VARbombs_posed = VARbombs_posed + 1;
+        document.getElementById("BombsPosed").innerHTML = VARbombs_posed;
+    }
+
+    function Win(winner){
+        if(winner==player){
+            VARscore1++;
+            document.getElementById("Score1").innerHTML = VARscore1;
+        }
+
+        if(winner==player2){
+            VARscore2++;
+            document.getElementById("Score2").innerHTML = VARscore2;
+        }
+        nb_breakable = 0;
+        breakable_created = false;
+        VARnb_tour++;
+        document.getElementById("nbParties").innerHTML = VARnb_tour;
+        that.scene.restart()
+    }
