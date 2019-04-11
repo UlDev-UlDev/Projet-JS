@@ -116,6 +116,11 @@
         return cell;
     }
 
+    function recupRangeBomb(cell, player){
+        exploZone = [];
+
+
+    }
 
     let game = new Phaser.Game(config);
 
