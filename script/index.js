@@ -103,6 +103,12 @@
     let stones;
     let that = "";
     let nb_breakable = 0;
+    let breakable_created = false;
+    let VARtime = 0;
+    let VARscore1 = 0;
+    let VARscore2 = 0;
+    let VARbombs_posed = 0;
+    let VARnb_tour = 0;
 
     //retournle la position du centre de la case la plus proche
     function calcDist(x,y){
@@ -125,8 +131,8 @@
     function preload () {
         this.load.image('background', 'files/fond.jpg');
         this.load.image('caisse', 'files/block.png');
-        this.load.image('stone', 'files/blockTest.png');
-        this.load.image('star', 'files/star.png');
+        this.load.image('stone', 'files/caillou.png');
+        this.load.image('star', 'files/bombe.png');
 
 
         this.load.spritesheet('dude',
@@ -234,16 +240,18 @@
         this.physics.add.collider(player, blocks);
         this.physics.add.collider(player2, blocks);
 
-        var timerBreakable = this.time.addEvent({
-            delay: 5000,
-            callback: create_breakable,
-            loop: true
-        });
+
     }
     
     function update() {
+
+
         if(that==""){
             that = this;
+        }
+
+        if (breakable_created == false) {
+            create_breakable();
         }
 
         if (cursors.left.isDown){
@@ -282,6 +290,7 @@
         this.keyUp = this.input.keyboard.addKey(90);
         this.keyDown = this.input.keyboard.addKey(83);
         this.keyBomb = this.input.keyboard.addKey(65);
+        this.keyBomb2 = this.input.keyboard.addKey(16);
         
         if (this.keyLeft.isDown){
             player.setVelocityX(-160);
@@ -325,36 +334,48 @@
                 let c = calcDist(player.getCenter().x, player.getCenter().y);
                 stars = this.physics.add.group({
                     key: 'star',
-                    setXY: { x: c.getX(), y: c.getY()}
+                    setXY: { x: c.getX(), y: c.getY()},
+                    setScale: { x: document_width/17000, y: document_height/17000}
                 });
             }
+        }
 
+        if (this.keyBomb2.isDown){
+            if(p2.getBomb() === 1){
+                p2.poseBombe();
+                let c = calcDist(player2.getCenter().x, player2.getCenter().y);
+                stars = this.physics.add.group({
+                    key: 'star',
+                    setXY: { x: c.getX(), y: c.getY()},
+                    setScale: { x: document_width/17000, y: document_height/17000}
+                });
+            }
         }
 
     }
 
     function create_breakable(){
-        if(nb_breakable>40){
-            return false;
-        }
-        let aleatnumber = Math.floor(Math.random() * (tab.length));
-            let aleatcell = tab[aleatnumber];
-        while(aleatcell.fill || calcDist(player.x,player.y) == aleatcell || calcDist(player2.x,player2.y) == aleatcell) {
-            aleatnumber = Math.floor(Math.random() * (tab.length));
-            aleatcell = tab[aleatnumber];
-        };
+        while(nb_breakable<70){
+            let aleatnumber = Math.floor(Math.random() * (tab.length));
+                let aleatcell = tab[aleatnumber];
+            while(aleatcell.fill || calcDist(player.x,player.y) == aleatcell || calcDist(player2.x,player2.y) == aleatcell) {
+                aleatnumber = Math.floor(Math.random() * (tab.length));
+                aleatcell = tab[aleatnumber];
+            };
 
-        stones = that.physics.add.group({
-                    key: 'stone',
-                    setXY: { x: aleatcell.getX(), y: aleatcell.getY()},
-                    immovable: true,
-                    moves: false
-                });
-        that.physics.add.collider(player, stones);
-        that.physics.add.collider(player2, stones);
-        aleatcell.fill = true;
-        nb_breakable++;
-        return true;
+            stones = that.physics.add.group({
+                        key: 'stone',
+                        setXY: { x: aleatcell.getX(), y: aleatcell.getY()},
+                        setScale: { x: document_width/10000, y: document_height/10000},
+                        immovable: true,
+                        moves: false
+                    });
+            that.physics.add.collider(player, stones);
+            that.physics.add.collider(player2, stones);
+            aleatcell.fill = true;
+            nb_breakable++;
+        }
+        breakable_created = true;
     }
 
     function create_item() {
