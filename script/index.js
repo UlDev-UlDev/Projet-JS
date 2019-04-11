@@ -131,6 +131,16 @@
         this.physics.add.collider(player, blocks);
         this.physics.add.collider(player2, blocks);
     }
+
+    function create_breakable(){
+        let aleatnumber = (Math.random() * (tab.length));
+        let aleatcell = tab[aleatnumber];
+        return aleatcell;
+    }
+
+    function create_item() {
+
+    }
     
     function update() {
         if (cursors.left.isDown){
