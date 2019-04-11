@@ -116,13 +116,97 @@
         return cell;
     }
 
-    function recupRangeBomb(cell, player){
-        exploZone = [];
-
-
-
-
+    function testInsideField(x,y) {
+        if(x > 0 && x < document_width && y > 0 && y < document_height){
+            return true;
+        } else {
+            return false;
+        }
     }
+
+    function recupCell(x,y){
+        for(let i = 0; i < tab.length; ++i){
+            if(x === tab[i].getX() && y === tab[i].getY()){
+                return tab[i];
+            }
+        }
+        return false;
+    }
+
+    function explosion(cell, player){
+        //faire l'explosion de la case présente en argument
+        let compt = 1;
+        let gauche = false;
+        let droite = false;
+        let haut = false;
+        let bas = false;
+        let fin = false;
+
+        while(compt <= player.range && fin === false){
+            dist = compt * demi * 2;
+            cellG = recupCell(cell.getX() - dist, cell.getY());
+            cellD = recupCell(cell.getX() + dist, cell.getY());
+            cellH = recupCell(cell.getX(), cell.getY() - dist);
+            cellB = recupCell(cell.getX(), cell.getY() + dist);
+            if(gauche === false){
+                if(!(cellG === false)){
+                    if(cellG.fill === false){
+                        destroy(cellG);
+                    } else {
+                        gauche = true;
+                        destroy(cellG);
+                    }
+                } else {
+                    gauche = true;
+                }
+            }
+
+            if(droite === false){
+                if(!(cellD === false)){
+                    if(cellD.fill === false){
+                        destroy(cellD);
+                    } else {
+                        droite = true;
+                        destroy(cellD);
+                    }
+                } else {
+                    droite = true;
+                }
+            }
+
+            if(haut === false){
+                if(!(cellH === false)){
+                    if(cellH.fill === false){
+                        destroy(cellH);
+                    } else {
+                        haut = true;
+                        destroy(cellH);
+                    }
+                } else {
+                    haut = true;
+                }
+            }
+
+            if(bas === false){
+                if(!(cellB === false)){
+                    if(cellB.fill === false){
+                        destroy(cellB);
+                    } else {
+                        bas = true;
+                        destroy(cellB);
+                    }
+                } else {
+                    bas = true;
+                }
+            }
+
+            ++compt;
+            if(gauche == droite == bas == haut == true){
+                fin = true;
+            }
+        }
+    }
+
 
     let game = new Phaser.Game(config);
 
@@ -135,11 +219,11 @@
 
         this.load.spritesheet('dude',
             'files/dude.png',
-            { frameWidth: 32, frameHeight: 34 }
+            { frameWidth: 31, frameHeight: 34 }
         );
         this.load.spritesheet('dude2',
             'files/dude2.png',
-            { frameWidth: 32, frameHeight: 34 }
+            { frameWidth: 31, frameHeight: 34 }
         );
     }
 
