@@ -1,15 +1,12 @@
     let document_width = document.getElementById("GameContainer").clientWidth;
     let document_height = document.getElementById("GameContainer").clientHeight;
 
+
     let config = {
         type: Phaser.AUTO,
-        scale: {
-            parent: 'GameContainer',
-            mode: Phaser.Scale.FIT,
-            autoCenter: Phaser.Scale.CENTER_BOTH,
-            width: document_width,
-            height: document_height,
-        },
+        width: document_width,
+        height: document_height,
+        parent: "GameContainer",
         physics: {
             default: 'arcade',
         },
@@ -20,16 +17,116 @@
         }
     };
 
+    class Player {
+        constructor(num){
+            this.num = num;
+            this.velocity = 160;
+            this.range = 0;
+            this.bomb = 1;
+        }
+
+        getNum(){
+            return this.num;
+        }
+        getVelocity(){
+            return this.velocity;
+        }
+        getRange(){
+            return this.range;
+        }
+        getBomb(){
+            return this.bomb;
+        }
+
+        setVelocity(vel){
+            this.velocity = vel;
+        }
+        setRange(rng){
+            this.range = rng;
+        }
+        setBomb(nb){
+            this.bomb = nb;
+        }
+
+        poseBombe(){
+            if(this.getBomb()>0){
+                this.setBomb(0);
+            }
+        }
+    }
+
+    class Cell {
+        constructor(x, y) {
+            this.x = x;
+            this.y = y;
+            this.fill = false;
+        }
+
+        getX(){
+            return this.x;
+        }
+        getY(){
+            return this.y;
+        }
+        fill(){
+            this.fill = true;
+        }
+        empty(){
+            this.fill = false;
+        }
+    }
+
+
+    let tab = [];
+    let demi = document_width / 22;
+    //initialisation du tableau des cases vides
+    //row : i
+    for(let i = 0; i <11; ++i){
+        //col : j
+        for(let j = 0; j<11; ++j){
+            if(!((i == 0 && j == 0)||(i == 0 && j == 1)||(i == 1 && j == 0)||(i == 10 && j == 10)||(i == 9 && j == 10)||(i == 10 && j == 9))){
+                if((i%2 == 0)||(j%2==0)){
+                    let c = new Cell(demi + i * (document_width/11), demi + j * (document_height/11));
+                    tab.push(c);
+                }
+            }
+        }
+    }
+
     let player;
+    let p1 = new Player(1);
     let player2;
+    let p2 = new Player(2);
     let blocks;
     let cursors;
+    let stars;
+    let stones;
+    let that = "";
+    let nb_breakable = 0;
+
+    //retournle la position du centre de la case la plus proche
+    function calcDist(x,y){
+        let cell = null;
+        let dist = 0;
+        let newDist = 0;
+        for(let i = 0; i < tab.length; ++i){
+            newDist = Math.sqrt(Math.pow(tab[i].getX() - x,2) + Math.pow(tab[i].getY() - y,2));
+            if((newDist < dist) || dist == 0){
+                cell = tab[i];
+                dist = newDist;
+            }
+        }
+        return cell;
+    }
+
 
     let game = new Phaser.Game(config);
 
     function preload () {
         this.load.image('background', 'files/fond.jpg');
         this.load.image('caisse', 'files/block.png');
+        this.load.image('stone', 'files/blockTest.png');
+        this.load.image('star', 'files/star.png');
 
 
         this.load.spritesheet('dude',
@@ -51,7 +148,12 @@
                 blocks.create((document_width / 11)*i + demi, (document_height / 11)*j + demi, 'caisse');
             }
         }
-
+        //test pour faire apparaitre des block cassables dans les ceses appropriés
+        /*
+        for(let i = 0; i < tab.length; ++i){
+            blocks.create(tab[i].getX(), tab[i].getY(), 'usable');
+        }
+        */
         player = this.physics.add.sprite(demi, demi, 'dude');
         player.setCollideWorldBounds(true);
         
@@ -127,22 +229,23 @@
             repeat: -1
         });
 
+
         cursors = this.input.keyboard.createCursorKeys();
         this.physics.add.collider(player, blocks);
         this.physics.add.collider(player2, blocks);
-    }
 
-    function create_breakable(){
-        let aleatnumber = (Math.random() * (tab.length));
-        let aleatcell = tab[aleatnumber];
-        return aleatcell;
-    }
-
-    function create_item() {
-
+        var timerBreakable = this.time.addEvent({
+            delay: 5000,
+            callback: create_breakable,
+            loop: true
+        });
     }
     
     function update() {
+        if(that==""){
+            that = this;
+        }
+
         if (cursors.left.isDown){
             player2.setVelocityX(-160);
             player2.setVelocityY(0);
@@ -178,6 +281,7 @@
         this.keyRight = this.input.keyboard.addKey(68);
         this.keyUp = this.input.keyboard.addKey(90);
         this.keyDown = this.input.keyboard.addKey(83);
+        this.keyBomb = this.input.keyboard.addKey(65);
         
         if (this.keyLeft.isDown){
             player.setVelocityX(-160);
@@ -208,5 +312,52 @@
         if (this.keyUp.isDown && player.body.touching.down) {
             player.setVelocityY(-330);
         }
+        if (this.keyLeft.isDown){
+            player.setVelocityX(-160);
+            player.setVelocityY(0);
+
+            player.anims.play('left', true);
+        }
+
+        if (this.keyBomb.isDown){
+            if(p1.getBomb() === 1){
+                p1.poseBombe();
+                let c = calcDist(player.getCenter().x, player.getCenter().y);
+                stars = this.physics.add.group({
+                    key: 'star',
+                    setXY: { x: c.getX(), y: c.getY()}
+                });
+            }
+
+        }
+
+    }
+
+    function create_breakable(){
+        if(nb_breakable>40){
+            return false;
+        }
+        let aleatnumber = Math.floor(Math.random() * (tab.length));
+            let aleatcell = tab[aleatnumber];
+        while(aleatcell.fill || calcDist(player.x,player.y) == aleatcell || calcDist(player2.x,player2.y) == aleatcell) {
+            aleatnumber = Math.floor(Math.random() * (tab.length));
+            aleatcell = tab[aleatnumber];
+        };
+
+        stones = that.physics.add.group({
+                    key: 'stone',
+                    setXY: { x: aleatcell.getX(), y: aleatcell.getY()},
+                    immovable: true,
+                    moves: false
+                });
+        that.physics.add.collider(player, stones);
+        that.physics.add.collider(player2, stones);
+        aleatcell.fill = true;
+        nb_breakable++;
+        return true;
+    }
+
+    function create_item() {
+
     }
 
