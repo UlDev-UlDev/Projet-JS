@@ -134,8 +134,10 @@
     }
 
     function explosion(cell, player){
+        //supprimer la bombe
         //faire l'explosion de la case présente en argument
         let compt = 1;
+        player.bomb++;
         let gauche = false;
         let droite = false;
         let haut = false;
