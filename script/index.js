@@ -21,7 +21,7 @@
         constructor(num){
             this.num = num;
             this.velocity = 160;
-            this.range = 0;
+            this.range = 2;
             this.bomb = 1;
         }
 
@@ -100,6 +100,7 @@
     let blocks;
     let cursors;
     let stars;
+    let isDown= 0;
 
     //retournle la position du centre de la case la plus proche
     function calcDist(x,y){
@@ -143,15 +144,15 @@
             winp1 = true;
         }
 
-        if(win1 && win2){
+        if(winp1 && winp2){
             win(null);
             return ;
         }
 
-        if(win1){
+        if(winp1){
             win(player);
         }
-        if(win2){
+        if(winp2){
             win(player2);
         }
 
@@ -169,76 +170,80 @@
         let bas = false;
         let fin = false;
 
-        while(compt <= player.range && fin === false){
+        while(compt <= player.range && fin == false){
             dist = compt * demi * 2;
-            cellG = recupCell(cell.getX() - dist, cell.getY());
-            cellD = recupCell(cell.getX() + dist, cell.getY());
-            cellH = recupCell(cell.getX(), cell.getY() - dist);
-            cellB = recupCell(cell.getX(), cell.getY() + dist);
+            cellG = recupCell(calcDist(cell.getX() - dist, cell.getY()).getX(), cell.getY());
+            cellD = recupCell(calcDist(cell.getX() + dist, cell.getY()).getX(), cell.getY());
+            cellH = recupCell(cell.getX(), calcDist(cell.getX(), cell.getY()-dist).getY());
+            cellB = recupCell(cell.getX(), calcDist(cell.getX(), cell.getY() + dist).getY());
+            console.log(cellG);
+            console.log(cellD);
+            console.log(cellH);
+            console.log(cellB);
             if(gauche === false){
                 if(!(cellG === false)){
-                    if(cellG.fill === false){
-                        //destroy(cellG);
-                        winCondition(cellG);
-                    } else {
+                    if(cellG.fill === false) {
                         gauche = true;
-                        //destroy(cellG);
-                        winCondition(cellG);
                     }
+                    //destroy(cellG);
+                    console.log("12");
+                    winCondition(cellG);
                 } else {
+                    console.log("1: true ");
                     gauche = true;
                 }
             }
 
             if(droite === false){
                 if(!(cellD === false)){
-                    if(cellD.fill === false){
-                        //destroy(cellD);
-                        winCondition(cellD);
-                    } else {
+                    if(cellD.fill === false) {
                         droite = true;
-                        //destroy(cellD);
-                        winCondition(cellD);
                     }
+                    //destroy(cellD);
+                    console.log("22");
+                    winCondition(cellD);
                 } else {
+                    console.log("2: true ");
                     droite = true;
                 }
             }
 
             if(haut === false){
                 if(!(cellH === false)){
-                    if(cellH.fill === false){
-                        //destroy(cellH);
-                        winCondition(cellH);
-                    } else {
+                    if(cellH.fill === false) {
                         haut = true;
-                        //destroy(cellH);
-                        winCondition(cellH);
                     }
+                    //destroy(cellH);
+                    console.log("32");
+                    winCondition(cellH);
                 } else {
+                    console.log("3: true ");
                     haut = true;
                 }
             }
 
             if(bas === false){
                 if(!(cellB === false)){
-                    if(cellB.fill === false){
-                        //destroy(cellB);
-                        winCondition(cellB);
-                    } else {
+                    if(cellB.fill === true) {
                         bas = true;
-                        //destroy(cellB);
-                        winCondition(cellB);
                     }
+                    //destroy(cellB);
+                    console.log("41");
+                    winCondition(cellB);
                 } else {
+                    console.log("4: true ");
                     bas = true;
                 }
             }
 
             ++compt;
-            if(gauche == droite == bas == haut == true){
+            if(gauche === droite === bas === haut === true){
                 fin = true;
             }
+            console.log("cpt :" + compt);
+            console.log("fin :" + fin);
+            console.log("range :" + player.range);
+
         }
     }
 
@@ -432,7 +437,8 @@
             player.anims.play('left', true);
         }
 
-        if (this.keyBomb.isDown){
+        if (this.keyBomb.isDown && isDown == 0){
+            isDown = 1;
             if(p1.getBomb() >= 1){
                 p1.poseBombe();
                 let c = calcDist(player.getCenter().x, player.getCenter().y);
@@ -441,14 +447,16 @@
                     setXY: { x: c.getX(), y: c.getY()}
                 });
 
-                var t = this.time.addEvent({
+                let t = this.time.addEvent({
                     delay: 2000,                // ms
                     callback: explosion,
                     args: [c, p1],
                     loop: false
                 });
             }
-
+        }
+        if (this.keyBomb.isUp && isDown == 1){
+            isDown = 0;
         }
 
     }
