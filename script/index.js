@@ -21,7 +21,7 @@
         constructor(num){
             this.num = num;
             this.velocity = 160;
-            this.range = 0;
+            this.range = 2;
             this.bomb = 1;
         }
 
@@ -100,6 +100,7 @@
     let blocks;
     let cursors;
     let stars;
+    let stars2;
     let stones = [];
     let stonetest;
     let that = "";
@@ -111,9 +112,13 @@
     let VARbombs_posed = 0;
     let VARnb_tour = 0;
     let tab_breakable = [];
+    let isDown = 0;
+    let isDown2 = 0;
+    let temp;
+    let fin = false;
 
     //retournle la position du centre de la case la plus proche
-    function calcDist(x,y){
+    function calcDist(x,y,strict = false){
         let cell = null;
         let dist = 0;
         let newDist = 0;
@@ -124,7 +129,21 @@
                 dist = newDist;
             }
         }
-        return cell;
+
+        if(strict === false){
+            return cell;
+        }
+
+
+        for(let i = 0; i < tab.length; ++i){
+            cell = tab[i];
+            if(cell.getX() <= x+demi && cell.getX() >= x-demi && cell.getY() <= y+demi && cell.getY() >= y-demi ){
+                return cell;
+            }
+        }
+
+        return false;
+
     }
 
 
@@ -343,30 +362,54 @@
             player.anims.play('left', true);
         }
 
-        if (this.keyBomb.isDown){
-            if(p1.getBomb() === 1){
+
+
+        if (this.keyBomb.isDown && isDown == 0){
+            isDown = 1;
+            if(p1.getBomb() >= 1){
                 p1.poseBombe();
-                let c = calcDist(player.getCenter().x, player.getCenter().y);
+                let c = calcDist(player.getCenter().x, player.getCenter().y,false);
                 stars = this.physics.add.group({
                     key: 'star',
                     setXY: { x: c.getX(), y: c.getY()},
                     setScale: { x: document_width/17000, y: document_height/17000}
                 });
                 MajNbBombes();
+
+                let t = this.time.addEvent({
+                    delay: 2000,                // ms
+                    callback: explosion,
+                    args: [c, p1],
+                    loop: false
+                });
             }
         }
+        if (this.keyBomb.isUp && isDown == 1){
+            isDown = 0;
+        }
 
-        if (this.keyBomb2.isDown){
-            if(p2.getBomb() === 1){
+        if (this.keyBomb2.isDown && isDown2 == 0){
+            isDown2 = 1;
+            if(p2.getBomb() >= 1){
                 p2.poseBombe();
-                let c = calcDist(player2.getCenter().x, player2.getCenter().y);
-                stars = this.physics.add.group({
+                let c = calcDist(player2.getCenter().x, player2.getCenter().y,false);
+                stars2 = this.physics.add.group({
                     key: 'star',
                     setXY: { x: c.getX(), y: c.getY()},
                     setScale: { x: document_width/17000, y: document_height/17000}
                 });
                 MajNbBombes();
+
+                let t2 = this.time.addEvent({
+                    delay: 2000,                // ms
+                    callback: explosion,
+                    args: [c, p2],
+                    loop: false
+                });
             }
+        }
+        if (this.keyBomb2.isUp && isDown2 == 1){
+            isDown2 = 0;
         }
 
     }
@@ -375,12 +418,12 @@
         while(nb_breakable<70){
             let aleatnumber = Math.floor(Math.random() * (tab.length));
                 let aleatcell = tab[aleatnumber];
-            while(aleatcell.fill || calcDist(player.x,player.y) == aleatcell || calcDist(player2.x,player2.y) == aleatcell) {
+            while(aleatcell.fill || calcDist(player.x,player.y,false) == aleatcell || calcDist(player2.x,player2.y,false) == aleatcell) {
                 aleatnumber = Math.floor(Math.random() * (tab.length));
                 aleatcell = tab[aleatnumber];
             };
 
-            stones = that.physics.add.group({
+            stones[nb_breakable] = that.physics.add.group({
                         key: 'stone',
                         setXY: { x: aleatcell.getX(), y: aleatcell.getY()},
                         setScale: { x: document_width/10000, y: document_height/10000},
@@ -389,9 +432,8 @@
                     });
             that.physics.add.collider(player, stones);
             that.physics.add.collider(player2, stones);
-            aleatcell.fill == true;
+            tab[aleatnumber].fill = true;
             nb_breakable++;
-            tab_breakable.push(stones);
         }
         breakable_created = true;
 
@@ -410,9 +452,6 @@
         tab.push(c);
     }
 
-    function take_item() {
-
-    }
 
     function MajSec() {
         VARtime = VARtime + 1;
@@ -431,6 +470,7 @@
     }
 
     function Win(winner){
+        fin = false;
         if(winner==player){
             VARscore1++;
             document.getElementById("Score1").innerHTML = VARscore1;
@@ -462,10 +502,179 @@
     }
 
     function recupStone(x, y) {
-        for(let i = 0; i < tab_breakable.length; i++){
-            if (tab_breakable[i].children.entries[0].x == x && tab_breakable[i].children.entries[0].y == y){
-                return tab_breakable[i];
+        for(let i = 0; i < stones.length; i++){
+            if (stones[i].children.entries[0].x == x && stones[i].children.entries[0].y == y){
+                temp = i;
+                return stones[i];
             }
         }
         return false;
+    }
+    function supprStone(x, y) {
+        for(let i = 0; i < stones.length; i++){
+            if (stones[i].children.entries[0].x == x && stones[i].children.entries[0].y == y){
+                stones.splice(i,1);
+            }
+        }
+        return false;
+    }
+
+    function explosion(cell, player){
+        //supprimer la bombe
+        if(player.num == 1){
+            stars.children.entries[0].destroy();
+        }
+        if(player.num == 2){
+            stars2.children.entries[0].destroy();
+        }
+        //faire l'explosion de la case présente en argument
+        let compt = 1;
+        player.bomb++;
+        let gauche = false;
+        let droite = false;
+        let haut = false;
+        let bas = false;
+        fin = false;
+        let cellg = false;
+        let cellG = false;
+        let celld = false;
+        let cellD = false;
+        let cellh = false;
+        let cellH = false;
+        let cellb = false;
+        let cellB = false;
+
+        while(compt <= player.range && fin == false){
+        console.log("coucou" + compt);
+            cellB = false;
+            cellH = false;
+            cellG = false;
+            cellD = false;
+
+            dist = compt * demi * 2;
+
+            cellg = calcDist(cell.getX() - dist, cell.getY(),true);
+            if(cellg != false){
+                cellG = recupCell(cellg.getX(), cell.getY());
+            }
+            celld = calcDist(cell.getX() + dist, cell.getY(),true);
+            if(celld != false){
+                cellD = recupCell(celld.getX(), cell.getY());
+            }
+            cellh = calcDist(cell.getX(), cell.getY() - dist,true);
+            if(cellh != false){
+                cellH = recupCell(cell.getX(), cellh.getY());
+            }
+            cellb = calcDist(cell.getX(), cell.getY() + dist,true);
+            if(cellb != false){
+                cellB = recupCell(cell.getX(), cellb.getY());
+            }
+            console.log(cellG);
+            console.log(cellD);
+            console.log(cellH);
+            console.log(cellB);
+            if(gauche === false){
+                if(!(cellG === false)){
+                    if(cellG.fill) {
+                        gauche = true;
+                    }
+                    destroy(cellG);
+                    console.log("12");
+                    winCondition(cellG);
+                    if(fin){return;}
+                } else {
+                    console.log("1: true ");
+                    gauche = true;
+                }
+            }
+
+            if(droite === false){
+                if(!(cellD === false)){
+                    if(cellD.fill) {
+                        droite = true;
+                    }
+                    destroy(cellD);
+                    console.log("22");
+                    winCondition(cellD);
+                    if(fin){return;}
+                } else {
+                    console.log("2: true ");
+                    droite = true;
+                }
+            }
+
+            if(haut === false){
+                if(!(cellH === false)){
+                    if(cellH.fill) {
+                        haut = true;
+                    }
+                    destroy(cellH);
+                    console.log("32");
+                    winCondition(cellH);
+                    if(fin){return;}
+                } else {
+                    console.log("3: true ");
+                    haut = true;
+                }
+            }
+
+            if(bas === false){
+                if(!(cellB === false)){
+                    if(cellB.fill) {
+                        bas = true;
+                    }
+                    destroy(cellB);
+                    console.log("41");
+                    winCondition(cellB);
+                    if(fin){return;}
+                } else {
+                    console.log("4: true ");
+                    bas = true;
+                }
+            }
+
+            compt++;
+            console.log("cpt :" + compt);
+            console.log("fin :" + fin);
+            console.log("range :" + player.range);
+
+        }
+    }
+
+    function destroy(cell){
+        displayAnim(cell.getX(),cell.getY());
+        let stone = recupStone(cell.getX(),cell.getY());
+        if (stone != false){
+            stone.fill = false;
+            stone.children.entries[0].destroy();
+            stones.splice(temp,1);
+        }
+        cell.fill = false;
+    }
+    //cell.children.entries[0].destroy()
+
+
+    function winCondition(cell){
+        let winp1 = false;
+        let winp2 = false;
+        if(calcDist(player.getCenter().x, player.getCenter().y) === cell){
+            winp2 = true;
+        }
+
+        if(calcDist(player2.getCenter().x, player2.getCenter().y) === cell){
+            winp1 = true;
+        }
+
+        if(winp1 && winp2){
+            Win(null);
+            return ;
+        }
+
+        if(winp1){
+            Win(player);
+        }
+
+        if(winp2){
+            Win(player2);
+        }
     }
