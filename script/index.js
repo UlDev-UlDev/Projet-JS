@@ -116,6 +116,7 @@
     let isDown2 = 0;
     let temp;
     let fin = false;
+    let restart = false;
 
     //retournle la position du centre de la case la plus proche
     function calcDist(x,y,strict = false){
@@ -286,6 +287,12 @@
 
         if (breakable_created == false) {
             create_breakable();
+        }
+
+        if (restart == true && fin == false){
+            console.log("restart demandé");
+            restart = false;
+            that.scene.restart();
         }
 
         if (cursors.left.isDown){
@@ -470,21 +477,25 @@
     }
 
     function Win(winner){
-        fin = false;
-        if(winner==player){
+        console.log("debut win");
+        fin = true;
+        if(winner===player){
+            console.log("win p1");
             VARscore1++;
             document.getElementById("Score1").innerHTML = VARscore1;
         }
 
-        if(winner==player2){
+        if(winner===player2){
             VARscore2++;
             document.getElementById("Score2").innerHTML = VARscore2;
         }
+        console.log("après win p1");
         nb_breakable = 0;
         breakable_created = false;
         VARnb_tour++;
         document.getElementById("nbParties").innerHTML = VARnb_tour;
-        that.scene.restart()
+        console.log("avant restart");
+        restart = true;
     }
 
     function recupCell(x, y) {
@@ -580,8 +591,7 @@
                     }
                     destroy(cellG);
                     console.log("12");
-                    winCondition(cellG);
-                    if(fin){return;}
+                    if(fin){fin = false; return;};
                 } else {
                     console.log("1: true ");
                     gauche = true;
@@ -595,8 +605,7 @@
                     }
                     destroy(cellD);
                     console.log("22");
-                    winCondition(cellD);
-                    if(fin){return;}
+                    if(fin){fin = false; return;};
                 } else {
                     console.log("2: true ");
                     droite = true;
@@ -610,8 +619,7 @@
                     }
                     destroy(cellH);
                     console.log("32");
-                    winCondition(cellH);
-                    if(fin){return;}
+                    if(fin){fin = false; return;};
                 } else {
                     console.log("3: true ");
                     haut = true;
@@ -625,8 +633,7 @@
                     }
                     destroy(cellB);
                     console.log("41");
-                    winCondition(cellB);
-                    if(fin){return;}
+                    if(fin){fin = false; return;};
                 } else {
                     console.log("4: true ");
                     bas = true;
@@ -650,31 +657,41 @@
             stones.splice(temp,1);
         }
         cell.fill = false;
+        winCondition(cell);
     }
     //cell.children.entries[0].destroy()
 
 
     function winCondition(cell){
+        console.log("b1");
         let winp1 = false;
         let winp2 = false;
-        if(calcDist(player.getCenter().x, player.getCenter().y) === cell){
+        if(calcDist(player.getCenter().x, player.getCenter().y,true) == cell){
             winp2 = true;
         }
+        console.log("b2");
 
-        if(calcDist(player2.getCenter().x, player2.getCenter().y) === cell){
+        if(calcDist(player2.getCenter().x, player2.getCenter().y,true) == cell){
             winp1 = true;
         }
 
+        console.log(calcDist(player2.getCenter().x, player2.getCenter().y,true));
+        console.log(cell);
+
+
         if(winp1 && winp2){
+            console.log("b3");
             Win(null);
             return ;
         }
 
         if(winp1){
+            console.log("b4");
             Win(player);
         }
 
         if(winp2){
+            console.log("b5");
             Win(player2);
         }
     }
