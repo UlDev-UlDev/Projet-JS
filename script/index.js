@@ -133,6 +133,31 @@
         return false;
     }
 
+    function winCondition(cell){
+        let winp1 = false;
+        let winp2 = false;
+        if(calcDist(player.getCenter().x, player.getCenter().y) === cell){
+            winp2 = true;
+        }
+        if(calcDist(player2.getCenter().x, player2.getCenter().y) === cell){
+            winp1 = true;
+        }
+
+        if(win1 && win2){
+            win(null);
+            return ;
+        }
+
+        if(win1){
+            win(player);
+        }
+        if(win2){
+            win(player2);
+        }
+
+
+    }
+
     function explosion(cell, player){
         //supprimer la bombe
         //faire l'explosion de la case présente en argument
@@ -153,10 +178,12 @@
             if(gauche === false){
                 if(!(cellG === false)){
                     if(cellG.fill === false){
-                        destroy(cellG);
+                        //destroy(cellG);
+                        winCondition(cellG);
                     } else {
                         gauche = true;
-                        destroy(cellG);
+                        //destroy(cellG);
+                        winCondition(cellG);
                     }
                 } else {
                     gauche = true;
@@ -166,10 +193,12 @@
             if(droite === false){
                 if(!(cellD === false)){
                     if(cellD.fill === false){
-                        destroy(cellD);
+                        //destroy(cellD);
+                        winCondition(cellD);
                     } else {
                         droite = true;
-                        destroy(cellD);
+                        //destroy(cellD);
+                        winCondition(cellD);
                     }
                 } else {
                     droite = true;
@@ -179,10 +208,12 @@
             if(haut === false){
                 if(!(cellH === false)){
                     if(cellH.fill === false){
-                        destroy(cellH);
+                        //destroy(cellH);
+                        winCondition(cellH);
                     } else {
                         haut = true;
-                        destroy(cellH);
+                        //destroy(cellH);
+                        winCondition(cellH);
                     }
                 } else {
                     haut = true;
@@ -192,10 +223,12 @@
             if(bas === false){
                 if(!(cellB === false)){
                     if(cellB.fill === false){
-                        destroy(cellB);
+                        //destroy(cellB);
+                        winCondition(cellB);
                     } else {
                         bas = true;
-                        destroy(cellB);
+                        //destroy(cellB);
+                        winCondition(cellB);
                     }
                 } else {
                     bas = true;
@@ -400,12 +433,19 @@
         }
 
         if (this.keyBomb.isDown){
-            if(p1.getBomb() === 1){
+            if(p1.getBomb() >= 1){
                 p1.poseBombe();
                 let c = calcDist(player.getCenter().x, player.getCenter().y);
                 stars = this.physics.add.group({
                     key: 'star',
                     setXY: { x: c.getX(), y: c.getY()}
+                });
+
+                var t = this.time.addEvent({
+                    delay: 2000,                // ms
+                    callback: explosion,
+                    args: [c, p1],
+                    loop: false
                 });
             }
 
