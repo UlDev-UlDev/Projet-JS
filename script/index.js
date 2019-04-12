@@ -100,7 +100,8 @@
     let blocks;
     let cursors;
     let stars;
-    let stones;
+    let stones = [];
+    let stonetest;
     let that = "";
     let nb_breakable = 0;
     let breakable_created = false;
@@ -109,6 +110,7 @@
     let VARscore2 = 0;
     let VARbombs_posed = 0;
     let VARnb_tour = 0;
+    let tab_breakable = [];
 
     //retournle la position du centre de la case la plus proche
     function calcDist(x,y){
@@ -133,6 +135,7 @@
         this.load.image('caisse', 'files/block.png');
         this.load.image('stone', 'files/caillou.png');
         this.load.image('star', 'files/bombe.png');
+        this.load.spritesheet('explosion', 'files/explosion.png', { frameWidth: 64, frameHeight: 64, endFrame: 23 });
 
 
         this.load.spritesheet('dude',
@@ -165,6 +168,13 @@
 
         player2 = this.physics.add.sprite(document_width - demi, document_height - demi, 'dude2');
         player2.setCollideWorldBounds(true);
+
+        let configAnim = {
+            key: 'explode',
+            frames: this.anims.generateFrameNumbers('explosion', { start: 0, end: 23, first: 23 }),
+            frameRate: 30,
+        };
+        this.anims.create(configAnim);
 
         this.anims.create({
             key: 'left',
@@ -381,8 +391,23 @@
             that.physics.add.collider(player2, stones);
             aleatcell.fill == true;
             nb_breakable++;
+            tab_breakable.push(stones);
         }
         breakable_created = true;
+
+
+        let c = new Cell(demi, demi);
+        tab.push(c);
+        c = new Cell(demi*3, demi);
+        tab.push(c);
+        c = new Cell(demi, demi*3);
+        tab.push(c);
+        c = new Cell(document_width-demi, document_width-demi);
+        tab.push(c);
+        c = new Cell(document_width-(demi*3), document_width-demi);
+        tab.push(c);
+        c = new Cell(document_width-demi, document_width-(demi*3));
+        tab.push(c);
     }
 
     function take_item() {
@@ -420,4 +445,27 @@
         VARnb_tour++;
         document.getElementById("nbParties").innerHTML = VARnb_tour;
         that.scene.restart()
+    }
+
+    function recupCell(x, y) {
+        for (let i = 0; i < tab.length; ++i) {
+            if (x === tab[i].getX() && y === tab[i].getY()) {
+                return tab[i];
+            }
+        }
+        return false;
+    }
+
+    function displayAnim(x, y) {
+        var boom = that.add.sprite(x, y, 'esplosion', 23);
+        boom.anims.delayedPlay(Math.random() * 3, 'explode');
+    }
+
+    function recupStone(x, y) {
+        for(let i = 0; i < tab_breakable.length; i++){
+            if (tab_breakable[i].children.entries[0].x == x && tab_breakable[i].children.entries[0].y == y){
+                return tab_breakable[i];
+            }
+        }
+        return false;
     }
